@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>StockSense Ledger</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+<div class="sidebar">
+    <h2>StockSense</h2>
+
+    <a href="dashboard.html">Dashboard</a>
+    <a href="products.html">Products</a>
+    <a href="receipts.html">Receipts</a>
+    <a href="deliveries.html">Deliveries</a>
+    <a href="transfers.html">Transfers</a>
+    <a href="adjustments.html">Adjustments</a>
+    <a href="warehouses.html">Warehouses</a>
+    <a href="ledger.html">Stock Ledger</a>
+</div>
+
+<div class="main">
+
+    <h1>Stock Ledger</h1>
+    <p>Complete history of inventory movements.</p>
+
+    <div class="card">
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Product</th>
+                    <th>SKU</th>
+                    <th>Location</th>
+                    <th>Movement</th>
+                    <th>Quantity</th>
+                    <th>Reference</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+
+            <tbody id="ledgerTable"></tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<script>
+
+const API = "http://127.0.0.1:5000";
+
+async function loadLedger() {
+
+    const response = await fetch(
+        API + "/api/ledger"
+    );
+
+    const data = await response.json();
+
+    const table =
+        document.getElementById("ledgerTable");
+
+    table.innerHTML = "";
+
+    data.ledger.forEach(item => {
+
+        const row =
+            document.createElement("tr");
+
+        row.innerHTML = `
+            <td>${item.id}</td>
+            <td>${item.product}</td>
+            <td>${item.sku}</td>
+            <td>${item.location}</td>
+            <td>${item.movement_type}</td>
+            <td>${item.quantity}</td>
+            <td>${item.reference_type || "-"}</td>
+            <td>${item.created_at}</td>
+        `;
+
+        table.appendChild(row);
+
+    });
+}
+
+loadLedger();
+
+</script>
+
+</body>
+</html>

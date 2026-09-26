@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>StockSense - Stock Adjustments</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<div class="sidebar">
+    <h2>StockSense</h2>
+
+    <a href="dashboard.html">Dashboard</a>
+    <a href="products.html">Products</a>
+    <a href="receipts.html">Receipts</a>
+    <a href="deliveries.html">Delivery Orders</a>
+    <a href="transfers.html">Internal Transfers</a>
+    <a href="adjustments.html">Stock Adjustments</a>
+    <a href="ledger.html">Stock Ledger</a>
+    <a href="warehouses.html">Warehouses</a>
+
+    <a href="login.html">Logout</a>
+</div>
+
+<div class="main-content">
+
+    <h1>Stock Adjustments</h1>
+
+    <div class="card">
+        <h2>Adjust Stock</h2>
+
+        <form id="adjustmentForm">
+
+            <select id="product" required>
+                <option value="">Select Product</option>
+            </select>
+
+            <select id="location" required>
+                <option value="">Select Location</option>
+            </select>
+
+            <input
+                type="number"
+                id="quantity"
+                placeholder="Physical Count"
+                min="0"
+                required
+            >
+
+            <button type="submit">Adjust Stock</button>
+
+        </form>
+
+        <p id="message"></p>
+    </div>
+
+    <div class="card">
+
+        <h2>Adjustment History</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Product</th>
+                    <th>Location</th>
+                    <th>Counted Quantity</th>
+                    <th>Difference</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+
+            <tbody id="adjustmentTable"></tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<script>
+
+async function loadProducts() {
+    const response = await fetch("http://127.0.0.1:5000/api/products");
+    const data = await response.json();
+
+    const select = document.getElementById("product");
+
+    data.products.forEach(product => {
+        const option = document.createElement("option");
+
+        option.value = product.id;
+        option.textContent = product.name;
+
+        select.appendChild(option);
+    });
+}
+
+
+async function loadLocations() {
+    const response = await fetch("http://127.0.0.1:5000/api/warehouses");
+    const data = await response.json();
+
+    const select = document.getElementById("location");
+
+    for (const warehouse of data.warehouses) {
+
+        const locationResponse = await fetch(
+            `http://127.0.0.1:5000/api/warehouses/${warehouse.id}/locations`
+        );
+
+        const locationData = await locationResponse.json();
+
+        locationData.locations.forEach(location => {
+
+            const option = document.createElement("option");
+
+            option.value = location.id;
+            option.textContent = `${warehouse.name} - ${location.name}`;
+
+            select.appendChild(option);
+        });
+    }
+}
+
+
+async function loadAdjustments() {
+
+    const response = await fetch(
+        "http://127.0.0.1:5000/api/adjustments"
+    );
+
+    const data = await response.json();
+
+    const table = document.getElementById("adjustmentTable");
+
+    table.innerHTML = "";
+
+    data.forEach(adjustment => {
+
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+            <td>${adjustment.product}</td>
+            <td>${adjustment.location}</td>
+            <td>${adjustment.counted_quantity}</td>
+            <td>${adjustment.difference}</td>
+            <td>${adjustment.created_at}</td>
+        `;
+
+        table.appendChild(row);
+    });
+}
+
+
+document.getElementById("adjustmentForm").addEventListener(
+    "submit",
+    async function(e) {
+
+        e.preventDefault();
+
+        const product_id = document.getElementById("product").value;
+        const location_id = document.getElementById("location").value;
+        const counted_quantity =
+            document.getElementById("quantity").value;
+
+        const response = await fetch(
+            "http://127.0.0.1:5000/api/adjustments",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify({
+                    product_id: Number(product_id),
+                    location_id: Number(location_id),
+                    counted_quantity: Number(counted_quantity)
+                })
+            }
+        );
+
+        const data = await response.json();
+
+        document.getElementById("message").innerText =
+            data.message;
+
+        if (response.ok) {
+
+            document.getElementById("adjustmentForm").reset();
+
+            loadAdjustments();
+        }
+    }
+);
+
+
+loadProducts();
+loadLocations();
+loadAdjustments();
+
+</script>
+
+</body>
+</html>

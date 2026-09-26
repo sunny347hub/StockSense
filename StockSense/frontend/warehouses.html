@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>StockSense Warehouses</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+<div class="sidebar">
+    <h2>StockSense</h2>
+
+    <a href="dashboard.html">Dashboard</a>
+    <a href="products.html">Products</a>
+    <a href="receipts.html">Receipts</a>
+    <a href="deliveries.html">Deliveries</a>
+    <a href="transfers.html">Transfers</a>
+    <a href="adjustments.html">Adjustments</a>
+    <a href="warehouses.html">Warehouses</a>
+</div>
+
+<div class="main">
+
+    <h1>Warehouses</h1>
+    <p>Manage warehouses and storage locations.</p>
+
+    <div class="card">
+
+        <h2>Add Warehouse</h2>
+
+        <form id="warehouseForm">
+
+            <input
+                id="warehouseName"
+                type="text"
+                placeholder="Warehouse Name"
+                required
+            >
+
+            <input
+                id="warehouseLocation"
+                type="text"
+                placeholder="City / Location"
+            >
+
+            <button type="submit">
+                Add Warehouse
+            </button>
+
+        </form>
+
+        <p id="warehouseMessage"></p>
+
+    </div>
+
+
+    <div class="card">
+
+        <h2>Add Location</h2>
+
+        <form id="locationForm">
+
+            <select id="warehouseSelect" required>
+                <option value="">Select Warehouse</option>
+            </select>
+
+            <input
+                id="locationName"
+                type="text"
+                placeholder="Location / Rack Name"
+                required
+            >
+
+            <button type="submit">
+                Add Location
+            </button>
+
+        </form>
+
+        <p id="locationMessage"></p>
+
+    </div>
+
+
+    <div class="card">
+
+        <h2>Warehouse List</h2>
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Warehouse</th>
+                    <th>Location</th>
+                </tr>
+            </thead>
+
+            <tbody id="warehouseTable"></tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+
+<script>
+
+const API = "http://127.0.0.1:5000";
+
+
+async function loadWarehouses() {
+
+    const response = await fetch(
+        API + "/api/warehouses"
+    );
+
+    const data = await response.json();
+
+    const select =
+        document.getElementById("warehouseSelect");
+
+    const table =
+        document.getElementById("warehouseTable");
+
+    select.innerHTML =
+        '<option value="">Select Warehouse</option>';
+
+    table.innerHTML = "";
+
+    data.warehouses.forEach(warehouse => {
+
+        const option =
+            document.createElement("option");
+
+        option.value = warehouse.id;
+        option.textContent = warehouse.name;
+
+        select.appendChild(option);
+
+
+        const row =
+            document.createElement("tr");
+
+        row.innerHTML = `
+            <td>${warehouse.id}</td>
+            <td>${warehouse.name}</td>
+            <td>${warehouse.location || "-"}</td>
+        `;
+
+        table.appendChild(row);
+
+    });
+}
+
+
+document.getElementById("warehouseForm").addEventListener(
+    "submit",
+    async function(event) {
+
+        event.preventDefault();
+
+        const data = {
+
+            name:
+                document.getElementById("warehouseName").value,
+
+            location:
+                document.getElementById("warehouseLocation").value
+
+        };
+
+        const response = await fetch(
+            API + "/api/warehouses",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify(data)
+            }
+        );
+
+        const result = await response.json();
+
+        document.getElementById(
+            "warehouseMessage"
+        ).textContent = result.message;
+
+        if (response.ok) {
+
+            document.getElementById(
+                "warehouseForm"
+            ).reset();
+
+            loadWarehouses();
+        }
+
+    }
+);
+
+
+document.getElementById("locationForm").addEventListener(
+    "submit",
+    async function(event) {
+
+        event.preventDefault();
+
+        const warehouseId =
+            document.getElementById("warehouseSelect").value;
+
+        const data = {
+
+            name:
+                document.getElementById("locationName").value
+
+        };
+
+        const response = await fetch(
+            API + "/api/warehouses/" +
+            warehouseId +
+            "/locations",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify(data)
+            }
+        );
+
+        const result = await response.json();
+
+        document.getElementById(
+            "locationMessage"
+        ).textContent = result.message;
+
+        if (response.ok) {
+
+            document.getElementById(
+                "locationForm"
+            ).reset();
+
+        }
+
+    }
+);
+
+
+loadWarehouses();
+
+</script>
+
+</body>
+</html>

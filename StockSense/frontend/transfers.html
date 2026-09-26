@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>StockSense Transfers</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+<div class="sidebar">
+    <h2>StockSense</h2>
+
+    <a href="dashboard.html">Dashboard</a>
+    <a href="products.html">Products</a>
+    <a href="receipts.html">Receipts</a>
+    <a href="deliveries.html">Deliveries</a>
+    <a href="transfers.html">Transfers</a>
+    <a href="adjustments.html">Adjustments</a>
+    <a href="warehouses.html">Warehouses</a>
+    <a href="ledger.html">Stock Ledger</a>
+</div>
+
+<div class="main">
+
+    <h1>Internal Transfers</h1>
+    <p>Move stock between locations.</p>
+
+    <div class="card">
+
+        <h2>New Transfer</h2>
+
+        <form id="transferForm">
+
+            <select id="product" required>
+                <option value="">Select Product</option>
+            </select>
+
+            <select id="fromLocation" required>
+                <option value="">From Location</option>
+            </select>
+
+            <select id="toLocation" required>
+                <option value="">To Location</option>
+            </select>
+
+            <input
+                id="quantity"
+                type="number"
+                min="1"
+                placeholder="Quantity"
+                required
+            >
+
+            <button type="submit">
+                Transfer Stock
+            </button>
+
+        </form>
+
+        <p id="message"></p>
+
+    </div>
+
+    <div class="card">
+
+        <h2>Transfer History</h2>
+
+        <table>
+
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>From</th>
+                    <th>To</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+
+            <tbody id="transferTable"></tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+<script>
+
+const API = "http://127.0.0.1:5000";
+
+
+async function loadProducts() {
+
+    const response = await fetch(API + "/api/products");
+    const data = await response.json();
+
+    const select = document.getElementById("product");
+
+    data.products.forEach(product => {
+
+        const option = document.createElement("option");
+
+        option.value = product.id;
+
+        option.textContent =
+            product.name + " (" + product.sku + ")";
+
+        select.appendChild(option);
+    });
+}
+
+
+async function loadLocations() {
+
+    const response = await fetch(API + "/api/warehouses");
+    const data = await response.json();
+
+    const from = document.getElementById("fromLocation");
+    const to = document.getElementById("toLocation");
+
+    for (const warehouse of data.warehouses) {
+
+        const locationResponse = await fetch(
+            API + "/api/warehouses/" +
+            warehouse.id +
+            "/locations"
+        );
+
+        const locationData = await locationResponse.json();
+
+        locationData.locations.forEach(location => {
+
+            const text =
+                warehouse.name + " - " + location.name;
+
+            const option1 =
+                document.createElement("option");
+
+            option1.value = location.id;
+            option1.textContent = text;
+
+            from.appendChild(option1);
+
+            const option2 =
+                document.createElement("option");
+
+            option2.value = location.id;
+            option2.textContent = text;
+
+            to.appendChild(option2);
+        });
+    }
+}
+
+
+async function loadTransfers() {
+
+    const response = await fetch(
+        API + "/api/transfers"
+    );
+
+    const data = await response.json();
+
+    const table =
+        document.getElementById("transferTable");
+
+    table.innerHTML = "";
+
+    data.transfers.forEach(transfer => {
+
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+            <td>${transfer.id}</td>
+            <td>${transfer.from_location}</td>
+            <td>${transfer.to_location}</td>
+            <td>${transfer.status}</td>
+            <td>${transfer.created_at}</td>
+        `;
+
+        table.appendChild(row);
+    });
+}
+
+
+document.getElementById("transferForm").addEventListener(
+    "submit",
+    async function(event) {
+
+        event.preventDefault();
+
+        const data = {
+
+            product_id:
+                Number(
+                    document.getElementById("product").value
+                ),
+
+            from_location:
+                Number(
+                    document.getElementById("fromLocation").value
+                ),
+
+            to_location:
+                Number(
+                    document.getElementById("toLocation").value
+                ),
+
+            quantity:
+                Number(
+                    document.getElementById("quantity").value
+                )
+        };
+
+        const response = await fetch(
+            API + "/api/transfers",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify(data)
+            }
+        );
+
+        const result = await response.json();
+
+        document.getElementById("message").textContent =
+            result.message;
+
+        if (response.ok) {
+
+            document.getElementById(
+                "transferForm"
+            ).reset();
+
+            loadTransfers();
+        }
+    }
+);
+
+
+loadProducts();
+loadLocations();
+loadTransfers();
+
+</script>
+
+</body>
+</html>

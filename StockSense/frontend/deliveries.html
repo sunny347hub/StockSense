@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>StockSense Deliveries</title>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+
+<body>
+
+<div class="sidebar">
+    <h2>StockSense</h2>
+
+    <a href="dashboard.html">Dashboard</a>
+    <a href="products.html">Products</a>
+    <a href="receipts.html">Receipts</a>
+    <a href="deliveries.html">Deliveries</a>
+    <a href="transfers.html">Transfers</a>
+    <a href="adjustments.html">Adjustments</a>
+    <a href="warehouses.html">Warehouses</a>
+</div>
+
+<div class="main">
+
+    <h1>Delivery Orders</h1>
+    <p>Deliver products and automatically reduce inventory.</p>
+
+    <div class="card">
+
+        <h2>New Delivery</h2>
+
+        <form id="deliveryForm">
+
+            <input
+                id="customer"
+                type="text"
+                placeholder="Customer Name"
+                required
+            >
+
+            <select id="location" required>
+                <option value="">Select Location</option>
+            </select>
+
+            <select id="product" required>
+                <option value="">Select Product</option>
+            </select>
+
+            <input
+                id="quantity"
+                type="number"
+                min="1"
+                placeholder="Quantity"
+                required
+            >
+
+            <button type="submit">
+                Deliver Stock
+            </button>
+
+        </form>
+
+        <p id="message"></p>
+
+    </div>
+
+    <div class="card">
+
+        <h2>Delivery History</h2>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Customer</th>
+                    <th>Status</th>
+                    <th>Date</th>
+                </tr>
+            </thead>
+
+            <tbody id="deliveryTable"></tbody>
+        </table>
+
+    </div>
+
+</div>
+
+<script>
+
+const API = "http://127.0.0.1:5000";
+
+
+async function loadProducts() {
+
+    const response = await fetch(API + "/api/products");
+    const data = await response.json();
+
+    const select = document.getElementById("product");
+
+    data.products.forEach(product => {
+
+        const option = document.createElement("option");
+
+        option.value = product.id;
+
+        option.textContent =
+            product.name + " (" + product.sku + ")";
+
+        select.appendChild(option);
+    });
+}
+
+
+async function loadLocations() {
+
+    const response = await fetch(API + "/api/warehouses");
+    const data = await response.json();
+
+    const select = document.getElementById("location");
+
+    for (const warehouse of data.warehouses) {
+
+        const locationResponse = await fetch(
+            API + "/api/warehouses/" +
+            warehouse.id +
+            "/locations"
+        );
+
+        const locationData = await locationResponse.json();
+
+        locationData.locations.forEach(location => {
+
+            const option = document.createElement("option");
+
+            option.value = location.id;
+
+            option.textContent =
+                warehouse.name + " - " + location.name;
+
+            select.appendChild(option);
+        });
+    }
+}
+
+
+async function loadDeliveries() {
+
+    const response = await fetch(API + "/api/deliveries");
+    const data = await response.json();
+
+    const table = document.getElementById("deliveryTable");
+
+    table.innerHTML = "";
+
+    data.deliveries.forEach(delivery => {
+
+        const row = document.createElement("tr");
+
+        row.innerHTML = `
+            <td>${delivery.id}</td>
+            <td>${delivery.customer}</td>
+            <td>${delivery.status}</td>
+            <td>${delivery.created_at}</td>
+        `;
+
+        table.appendChild(row);
+    });
+}
+
+
+document.getElementById("deliveryForm").addEventListener(
+    "submit",
+    async function(event) {
+
+        event.preventDefault();
+
+        const data = {
+
+            customer:
+                document.getElementById("customer").value,
+
+            location_id:
+                Number(document.getElementById("location").value),
+
+            items: [
+                {
+                    product_id:
+                        Number(document.getElementById("product").value),
+
+                    quantity:
+                        Number(document.getElementById("quantity").value)
+                }
+            ]
+        };
+
+        const response = await fetch(
+            API + "/api/deliveries",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify(data)
+            }
+        );
+
+        const result = await response.json();
+
+        document.getElementById("message").textContent =
+            result.message;
+
+        if (response.ok) {
+
+            document.getElementById("deliveryForm").reset();
+
+            loadDeliveries();
+        }
+    }
+);
+
+
+loadProducts();
+loadLocations();
+loadDeliveries();
+
+</script>
+
+</body>
+</html>
