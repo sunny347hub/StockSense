@@ -7,6 +7,19 @@
 
 <body>
 
+<script>
+const user = localStorage.getItem("user");
+
+if (!user) {
+    window.location.href = "login.html";
+}
+
+function logout() {
+    localStorage.removeItem("user");
+    window.location.href = "login.html";
+}
+</script>
+
 <div class="sidebar">
     <h2>StockSense</h2>
 
@@ -17,6 +30,9 @@
     <a href="transfers.html">Transfers</a>
     <a href="adjustments.html">Adjustments</a>
     <a href="warehouses.html">Warehouses</a>
+    <a href="ledger.html">Stock Ledger</a>
+
+    <a href="#" onclick="logout()">Logout</a>
 </div>
 
 <div class="main">
@@ -53,7 +69,6 @@
 
     </div>
 
-
     <div class="card">
 
         <h2>Add Location</h2>
@@ -81,7 +96,6 @@
 
     </div>
 
-
     <div class="card">
 
         <h2>Warehouse List</h2>
@@ -104,10 +118,9 @@
 
 </div>
 
-
 <script>
 
-const API = "http://127.0.0.1:5000";
+const API = "https://stocksense-backend-m1r5.onrender.com";
 
 
 async function loadWarehouses() {
@@ -138,7 +151,6 @@ async function loadWarehouses() {
         option.textContent = warehouse.name;
 
         select.appendChild(option);
-
 
         const row =
             document.createElement("tr");
@@ -184,7 +196,8 @@ document.getElementById("warehouseForm").addEventListener(
             }
         );
 
-        const result = await response.json();
+        const result =
+            await response.json();
 
         document.getElementById(
             "warehouseMessage"
@@ -234,7 +247,8 @@ document.getElementById("locationForm").addEventListener(
             }
         );
 
-        const result = await response.json();
+        const result =
+            await response.json();
 
         document.getElementById(
             "locationMessage"
