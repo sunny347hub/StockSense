@@ -4,20 +4,23 @@
     <title>StockSense Dashboard</title>
     <link rel="stylesheet" href="css/style.css">
 </head>
+
+<body>
+
 <script>
+const user = localStorage.getItem("user");
+
+if (!user) {
+    window.location.href = "login.html";
+}
+
 function logout() {
     localStorage.removeItem("user");
     window.location.href = "login.html";
-    const user = localStorage.getItem("user");
-
-    if (!user) {
-        window.location.href = "login.html";
-    }
 }
 </script>
-<body>
 
-    <div class="sidebar">
+<div class="sidebar">
     <h2>StockSense</h2>
 
     <a href="dashboard.html">Dashboard</a>
@@ -32,76 +35,76 @@ function logout() {
     <a href="#" onclick="logout()">Logout</a>
 </div>
 
-    <div class="main">
+<div class="main">
 
-        <h1>Inventory Dashboard</h1>
-        <p>Overview of your inventory operations</p>
+    <h1>Inventory Dashboard</h1>
+    <p>Overview of your inventory operations</p>
 
-        <div class="cards">
+    <div class="cards">
 
-            <div class="card">
-                <h3>Total Products</h3>
-                <h2 id="totalProducts">0</h2>
-            </div>
+        <div class="card">
+            <h3>Total Products</h3>
+            <h2 id="totalProducts">0</h2>
+        </div>
 
-            <div class="card">
-                <h3>Low Stock</h3>
-                <h2 id="lowStock">0</h2>
-            </div>
+        <div class="card">
+            <h3>Low Stock</h3>
+            <h2 id="lowStock">0</h2>
+        </div>
 
-            <div class="card">
-                <h3>Out of Stock</h3>
-                <h2 id="outOfStock">0</h2>
-            </div>
+        <div class="card">
+            <h3>Out of Stock</h3>
+            <h2 id="outOfStock">0</h2>
+        </div>
 
-            <div class="card">
-                <h3>Pending Receipts</h3>
-                <h2 id="pendingReceipts">0</h2>
-            </div>
+        <div class="card">
+            <h3>Pending Receipts</h3>
+            <h2 id="pendingReceipts">0</h2>
+        </div>
 
-            <div class="card">
-                <h3>Pending Deliveries</h3>
-                <h2 id="pendingDeliveries">0</h2>
-            </div>
+        <div class="card">
+            <h3>Pending Deliveries</h3>
+            <h2 id="pendingDeliveries">0</h2>
+        </div>
 
-            <div class="card">
-                <h3>Internal Transfers</h3>
-                <h2 id="internalTransfers">0</h2>
-            </div>
-
+        <div class="card">
+            <h3>Internal Transfers</h3>
+            <h2 id="internalTransfers">0</h2>
         </div>
 
     </div>
 
-    <script>
-        fetch("http://127.0.0.1:5000/api/dashboard")
-            .then(response => response.json())
-            .then(data => {
+</div>
 
-                const dashboard = data.dashboard;
+<script>
+fetch("https://stocksense-backend-m1r5.onrender.com/api/dashboard")
+    .then(response => response.json())
+    .then(data => {
 
-                document.getElementById("totalProducts").textContent =
-                    dashboard.total_products;
+        const dashboard = data.dashboard;
 
-                document.getElementById("lowStock").textContent =
-                    dashboard.low_stock;
+        document.getElementById("totalProducts").textContent =
+            dashboard.total_products;
 
-                document.getElementById("outOfStock").textContent =
-                    dashboard.out_of_stock;
+        document.getElementById("lowStock").textContent =
+            dashboard.low_stock;
 
-                document.getElementById("pendingReceipts").textContent =
-                    dashboard.pending_receipts;
+        document.getElementById("outOfStock").textContent =
+            dashboard.out_of_stock;
 
-                document.getElementById("pendingDeliveries").textContent =
-                    dashboard.pending_deliveries;
+        document.getElementById("pendingReceipts").textContent =
+            dashboard.pending_receipts;
 
-                document.getElementById("internalTransfers").textContent =
-                    dashboard.internal_transfers;
-            })
-            .catch(error => {
-                console.error("Dashboard error:", error);
-            });
-    </script>
+        document.getElementById("pendingDeliveries").textContent =
+            dashboard.pending_deliveries;
+
+        document.getElementById("internalTransfers").textContent =
+            dashboard.internal_transfers;
+    })
+    .catch(error => {
+        console.error("Dashboard error:", error);
+    });
+</script>
 
 </body>
 </html>
