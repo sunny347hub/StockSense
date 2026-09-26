@@ -7,164 +7,243 @@
 
 <body>
 
-    <div class="sidebar">
-        <h2>StockSense</h2>
+<script>
+const user = localStorage.getItem("user");
 
-        <a href="dashboard.html">Dashboard</a>
-        <a href="products.html">Products</a>
-        <a href="receipts.html">Receipts</a>
-        <a href="deliveries.html">Deliveries</a>
-        <a href="transfers.html">Transfers</a>
-        <a href="adjustments.html">Adjustments</a>
-        <a href="warehouses.html">Warehouses</a>
+if (!user) {
+    window.location.href = "login.html";
+}
+
+function logout() {
+    localStorage.removeItem("user");
+    window.location.href = "login.html";
+}
+</script>
+
+<div class="sidebar">
+    <h2>StockSense</h2>
+
+    <a href="dashboard.html">Dashboard</a>
+    <a href="products.html">Products</a>
+    <a href="receipts.html">Receipts</a>
+    <a href="deliveries.html">Deliveries</a>
+    <a href="transfers.html">Transfers</a>
+    <a href="adjustments.html">Adjustments</a>
+    <a href="ledger.html">Stock Ledger</a>
+    <a href="warehouses.html">Warehouses</a>
+
+    <a href="#" onclick="logout()">Logout</a>
+</div>
+
+<div class="main">
+
+    <h1>Products</h1>
+    <p>Create and manage inventory products.</p>
+
+    <div class="card">
+        <h2>Add Product</h2>
+
+        <form id="productForm">
+
+            <input
+                id="name"
+                type="text"
+                placeholder="Product Name"
+                required
+            >
+
+            <input
+                id="sku"
+                type="text"
+                placeholder="SKU / Code"
+                required
+            >
+
+            <select id="category">
+                <option value="">Select Category</option>
+            </select>
+
+            <input
+                id="unit"
+                type="text"
+                placeholder="Unit of Measure"
+                required
+            >
+
+            <input
+                id="initialStock"
+                type="number"
+                placeholder="Initial Stock"
+                value="0"
+                min="0"
+            >
+
+            <input
+                id="reorderLevel"
+                type="number"
+                placeholder="Reorder Level"
+                value="0"
+                min="0"
+            >
+
+            <button type="submit">Add Product</button>
+
+        </form>
+
+        <p id="message"></p>
     </div>
 
-    <div class="main">
+    <div class="card">
 
-        <h1>Products</h1>
-        <p>Create and manage inventory products.</p>
+        <h2>Product List</h2>
 
-        <div class="card">
-            <h2>Add Product</h2>
+        <table width="100%" border="1" cellpadding="10">
 
-            <form id="productForm">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>SKU</th>
+                    <th>Category</th>
+                    <th>Unit</th>
+                    <th>Reorder Level</th>
+                </tr>
+            </thead>
 
-                <input id="name" type="text" placeholder="Product Name" required>
+            <tbody id="productTable"></tbody>
 
-                <input id="sku" type="text" placeholder="SKU / Code" required>
-
-                <select id="category">
-                    <option value="">Select Category</option>
-                </select>
-
-                <input id="unit" type="text" placeholder="Unit of Measure" required>
-
-                <input id="initialStock" type="number" placeholder="Initial Stock" value="0">
-
-                <input id="reorderLevel" type="number" placeholder="Reorder Level" value="0">
-
-                <button type="submit">Add Product</button>
-
-            </form>
-
-            <p id="message"></p>
-        </div>
-
-        <div class="card">
-            <h2>Product List</h2>
-
-            <table width="100%" border="1" cellpadding="10">
-                <thead>
-                    <tr>
-                        <th>Name</th>
-                        <th>SKU</th>
-                        <th>Category</th>
-                        <th>Unit</th>
-                        <th>Reorder Level</th>
-                    </tr>
-                </thead>
-
-                <tbody id="productTable"></tbody>
-            </table>
-        </div>
+        </table>
 
     </div>
 
-    <script>
+</div>
 
-        const API = "http://127.0.0.1:5000";
+<script>
 
-        async function loadCategories() {
-
-            const response = await fetch(API + "/api/categories");
-            const data = await response.json();
-
-            const category = document.getElementById("category");
-
-            data.categories.forEach(item => {
-                const option = document.createElement("option");
-
-                option.value = item.id;
-                option.textContent = item.name;
-
-                category.appendChild(option);
-            });
-        }
+const API = "https://stocksense-backend-m1r5.onrender.com";
 
 
-        async function loadProducts() {
+async function loadCategories() {
 
-            const response = await fetch(API + "/api/products");
-            const data = await response.json();
+    const response = await fetch(
+        API + "/api/categories"
+    );
 
-            const table = document.getElementById("productTable");
+    const data = await response.json();
 
-            table.innerHTML = "";
+    const category =
+        document.getElementById("category");
 
-            data.products.forEach(product => {
+    category.innerHTML =
+        '<option value="">Select Category</option>';
 
-                const row = document.createElement("tr");
+    data.categories.forEach(item => {
 
-                row.innerHTML = `
-                    <td>${product.name}</td>
-                    <td>${product.sku}</td>
-                    <td>${product.category || "-"}</td>
-                    <td>${product.unit}</td>
-                    <td>${product.reorder_level}</td>
-                `;
+        const option =
+            document.createElement("option");
 
-                table.appendChild(row);
-            });
-        }
+        option.value = item.id;
+
+        option.textContent = item.name;
+
+        category.appendChild(option);
+    });
+}
 
 
-        document.getElementById("productForm").addEventListener(
-            "submit",
-            async function(event) {
+async function loadProducts() {
 
-                event.preventDefault();
+    const response = await fetch(
+        API + "/api/products"
+    );
 
-                const data = {
-                    name: document.getElementById("name").value,
-                    sku: document.getElementById("sku").value,
-                    category_id: document.getElementById("category").value || null,
-                    unit: document.getElementById("unit").value,
-                    initial_stock: Number(
-                        document.getElementById("initialStock").value
-                    ),
-                    reorder_level: Number(
-                        document.getElementById("reorderLevel").value
-                    )
-                };
+    const data = await response.json();
 
-                const response = await fetch(
-                    API + "/api/products",
-                    {
-                        method: "POST",
-                        headers: {
-                            "Content-Type": "application/json"
-                        },
-                        body: JSON.stringify(data)
-                    }
-                );
+    const table =
+        document.getElementById("productTable");
 
-                const result = await response.json();
+    table.innerHTML = "";
 
-                document.getElementById("message").textContent =
-                    result.message;
+    data.products.forEach(product => {
 
-                if (response.ok) {
-                    document.getElementById("productForm").reset();
-                    loadProducts();
-                }
+        const row =
+            document.createElement("tr");
+
+        row.innerHTML = `
+            <td>${product.name}</td>
+            <td>${product.sku}</td>
+            <td>${product.category || "-"}</td>
+            <td>${product.unit}</td>
+            <td>${product.reorder_level}</td>
+        `;
+
+        table.appendChild(row);
+    });
+}
+
+
+document.getElementById("productForm").addEventListener(
+    "submit",
+    async function(event) {
+
+        event.preventDefault();
+
+        const data = {
+
+            name:
+                document.getElementById("name").value,
+
+            sku:
+                document.getElementById("sku").value,
+
+            category_id:
+                document.getElementById("category").value || null,
+
+            unit:
+                document.getElementById("unit").value,
+
+            initial_stock:
+                Number(
+                    document.getElementById("initialStock").value
+                ),
+
+            reorder_level:
+                Number(
+                    document.getElementById("reorderLevel").value
+                )
+        };
+
+        const response = await fetch(
+            API + "/api/products",
+            {
+                method: "POST",
+
+                headers: {
+                    "Content-Type": "application/json"
+                },
+
+                body: JSON.stringify(data)
             }
         );
 
+        const result = await response.json();
 
-        loadCategories();
-        loadProducts();
+        document.getElementById("message").textContent =
+            result.message;
 
-    </script>
+        if (response.ok) {
+
+            document.getElementById("productForm").reset();
+
+            loadProducts();
+        }
+    }
+);
+
+
+loadCategories();
+loadProducts();
+
+</script>
 
 </body>
 </html>
