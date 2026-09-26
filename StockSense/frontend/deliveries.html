@@ -7,6 +7,19 @@
 
 <body>
 
+<script>
+const user = localStorage.getItem("user");
+
+if (!user) {
+    window.location.href = "login.html";
+}
+
+function logout() {
+    localStorage.removeItem("user");
+    window.location.href = "login.html";
+}
+</script>
+
 <div class="sidebar">
     <h2>StockSense</h2>
 
@@ -16,7 +29,9 @@
     <a href="deliveries.html">Deliveries</a>
     <a href="transfers.html">Transfers</a>
     <a href="adjustments.html">Adjustments</a>
+    <a href="ledger.html">Stock Ledger</a>
     <a href="warehouses.html">Warehouses</a>
+    <a href="#" onclick="logout()">Logout</a>
 </div>
 
 <div class="main">
@@ -86,7 +101,7 @@
 
 <script>
 
-const API = "http://127.0.0.1:5000";
+const API = "https://stocksense-backend-m1r5.onrender.com";
 
 
 async function loadProducts() {
