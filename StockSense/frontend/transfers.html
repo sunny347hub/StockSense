@@ -7,6 +7,19 @@
 
 <body>
 
+<script>
+const user = localStorage.getItem("user");
+
+if (!user) {
+    window.location.href = "login.html";
+}
+
+function logout() {
+    localStorage.removeItem("user");
+    window.location.href = "login.html";
+}
+</script>
+
 <div class="sidebar">
     <h2>StockSense</h2>
 
@@ -18,6 +31,8 @@
     <a href="adjustments.html">Adjustments</a>
     <a href="warehouses.html">Warehouses</a>
     <a href="ledger.html">Stock Ledger</a>
+
+    <a href="#" onclick="logout()">Logout</a>
 </div>
 
 <div class="main">
@@ -87,19 +102,24 @@
 
 <script>
 
-const API = "http://127.0.0.1:5000";
+const API = "https://stocksense-backend-m1r5.onrender.com";
 
 
 async function loadProducts() {
 
-    const response = await fetch(API + "/api/products");
+    const response = await fetch(
+        API + "/api/products"
+    );
+
     const data = await response.json();
 
-    const select = document.getElementById("product");
+    const select =
+        document.getElementById("product");
 
     data.products.forEach(product => {
 
-        const option = document.createElement("option");
+        const option =
+            document.createElement("option");
 
         option.value = product.id;
 
@@ -113,11 +133,17 @@ async function loadProducts() {
 
 async function loadLocations() {
 
-    const response = await fetch(API + "/api/warehouses");
+    const response = await fetch(
+        API + "/api/warehouses"
+    );
+
     const data = await response.json();
 
-    const from = document.getElementById("fromLocation");
-    const to = document.getElementById("toLocation");
+    const from =
+        document.getElementById("fromLocation");
+
+    const to =
+        document.getElementById("toLocation");
 
     for (const warehouse of data.warehouses) {
 
@@ -127,12 +153,15 @@ async function loadLocations() {
             "/locations"
         );
 
-        const locationData = await locationResponse.json();
+        const locationData =
+            await locationResponse.json();
 
         locationData.locations.forEach(location => {
 
             const text =
-                warehouse.name + " - " + location.name;
+                warehouse.name +
+                " - " +
+                location.name;
 
             const option1 =
                 document.createElement("option");
@@ -169,7 +198,8 @@ async function loadTransfers() {
 
     data.transfers.forEach(transfer => {
 
-        const row = document.createElement("tr");
+        const row =
+            document.createElement("tr");
 
         row.innerHTML = `
             <td>${transfer.id}</td>
@@ -226,7 +256,8 @@ document.getElementById("transferForm").addEventListener(
             }
         );
 
-        const result = await response.json();
+        const result =
+            await response.json();
 
         document.getElementById("message").textContent =
             result.message;
