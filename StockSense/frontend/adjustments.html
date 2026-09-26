@@ -79,7 +79,7 @@
 <script>
 
 async function loadProducts() {
-    const response = await fetch("http://127.0.0.1:5000/api/products");
+    const response = await fetch("https://stocksense-backend-m1r5.onrender.com/api/products");
     const data = await response.json();
 
     const select = document.getElementById("product");
@@ -96,7 +96,7 @@ async function loadProducts() {
 
 
 async function loadLocations() {
-    const response = await fetch("http://127.0.0.1:5000/api/warehouses");
+    const response = await fetch("https://stocksense-backend-m1r5.onrender.com/api/warehouses");
     const data = await response.json();
 
     const select = document.getElementById("location");
@@ -104,8 +104,7 @@ async function loadLocations() {
     for (const warehouse of data.warehouses) {
 
         const locationResponse = await fetch(
-            `http://127.0.0.1:5000/api/warehouses/${warehouse.id}/locations`
-        );
+            `https://stocksense-backend-m1r5.onrender.com/api/warehouses/${warehouse.id}/locations`
 
         const locationData = await locationResponse.json();
 
@@ -125,7 +124,7 @@ async function loadLocations() {
 async function loadAdjustments() {
 
     const response = await fetch(
-        "http://127.0.0.1:5000/api/adjustments"
+        "https://stocksense-backend-m1r5.onrender.com/api/adjustments"
     );
 
     const data = await response.json();
@@ -163,7 +162,7 @@ document.getElementById("adjustmentForm").addEventListener(
             document.getElementById("quantity").value;
 
         const response = await fetch(
-            "http://127.0.0.1:5000/api/adjustments",
+            "https://stocksense-backend-m1r5.onrender.com/api/adjustments"
             {
                 method: "POST",
 
